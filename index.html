@@ -261,6 +261,26 @@
       padding: 10px 14px;
       font-size: 14px;
     }
+
+    .today-dashboard { display: grid; gap: 16px; text-align: left; }
+    .today-head { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap; }
+    .today-date { font-weight:bold; color:var(--lila-oscuro); text-transform:capitalize; }
+    .today-focus { background:var(--verde-suave); padding:8px 12px; border-radius:999px; font-size:13px; font-weight:bold; }
+    .routine-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; }
+    .routine-block { background:#fffafd; border:1px solid #ead7ff; border-radius:20px; padding:14px; }
+    .routine-block h3 { margin-top:0; }
+    .routine-task { display:flex; gap:10px; align-items:flex-start; padding:9px 0; border-bottom:1px solid #f0e5f7; }
+    .routine-task:last-child { border-bottom:0; }
+    .routine-task input { width:auto; margin-top:3px; transform:scale(1.15); }
+    .next-step { background:linear-gradient(135deg,var(--verde-suave),var(--rosa-suave)); border-radius:18px; padding:14px; }
+    .anxiety-check { display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; }
+    .anxiety-check input[type="range"] { padding:0; }
+    .anxiety-value { min-width:42px; text-align:center; font-weight:bold; font-size:20px; color:var(--lila-oscuro); }
+    .calm-btn { width:100%; background:linear-gradient(135deg,#67b98f,#8a5fd3); }
+    .calm-tools { display:grid; gap:12px; }
+    .calm-tool { background:#fffafd; border-left:5px solid var(--verde); border-radius:16px; padding:14px; line-height:1.55; }
+    .mini-note { font-size:13px; color:#6b5782; line-height:1.45; }
+    @media (max-width:520px) { .today-head { display:block; } .today-focus { display:inline-block; margin-top:8px; } }
 </style>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#c9a7ff">
@@ -277,19 +297,58 @@
       <h1>💜 Mi Diario de Luz 🌸</h1>
       <p>Un espacio seguro para escribir, avanzar poquito a poquito y reconocer cada logro.</p>
       <div class="menu-actions">
+        <button class="success" onclick="showSection('inicio')">☀️ Mi día de hoy</button>
         <button onclick="showSection('diario')">📖 Mi diario</button>
         <button class="success" onclick="showSection('actividades')">🌱 Mis actividades</button>
         <button class="secondary" onclick="showSection('evaluacion')">✨ Evaluación</button>
         <button onclick="showSection('notas')">📝 Notas rápidas</button>
         <button class="secondary" onclick="showSection('apoyo')">💜 Mensajes de apoyo</button>
         <button onclick="showSection('entradas')">📚 Entradas guardadas</button>
+        <button class="success" onclick="showSection('calma')">🫶 Necesito calmarme</button>
       </div>
     </header>
 
     <section id="inicio" class="view active">
-      <div class="welcome">
-        <h2>Bienvenida a tu espacio de calma</h2>
-        <p>Para mantener todo ordenado, elige qué quieres hacer ahora. Puedes escribir tu día, planificar actividades, marcar avances o ver una evaluación motivadora.</p>
+      <div class="welcome today-dashboard">
+        <div class="today-head">
+          <div>
+            <div class="today-date" id="todayDate"></div>
+            <h2 id="todayGreeting">Mi día de hoy</h2>
+            <p id="todayIntro">Un paso pequeño a la vez. No necesitas completar todo para que el día cuente.</p>
+          </div>
+          <span class="today-focus" id="todayFocus"></span>
+        </div>
+
+        <div class="card">
+          <h3>🌤️ ¿Cómo está tu ansiedad ahora?</h3>
+          <div class="anxiety-check">
+            <input id="anxietyStart" type="range" min="0" max="10" value="5" oninput="updateAnxietyValue('anxietyStart','anxietyStartValue')" onchange="saveDailyAnxiety()" />
+            <span class="anxiety-value" id="anxietyStartValue">5</span>
+          </div>
+          <p class="mini-note">0 = muy tranquila · 10 = ansiedad muy intensa. Es solo un registro personal, no un diagnóstico.</p>
+        </div>
+
+        <div class="card">
+          <div class="section-title"><h3>Tu progreso de hoy</h3><strong id="todayProgressText">0/0</strong></div>
+          <div class="progress-wrap"><div class="progress-bar" id="todayProgressBar"></div></div>
+          <div class="next-step"><strong>Tu próximo pequeño paso</strong><p id="nextStepText">Preparando tu rutina...</p></div>
+        </div>
+
+        <div class="routine-grid" id="todayRoutine"></div>
+
+        <div class="card">
+          <h3>🌙 Cierre del día</h3>
+          <label>¿Cómo está tu ansiedad al terminar?</label>
+          <div class="anxiety-check">
+            <input id="anxietyEnd" type="range" min="0" max="10" value="5" oninput="updateAnxietyValue('anxietyEnd','anxietyEndValue')" onchange="saveDailyAnxiety()" />
+            <span class="anxiety-value" id="anxietyEndValue">5</span>
+          </div>
+          <label>¿Qué te ayudó más hoy?</label>
+          <input id="helpedToday" placeholder="Ej: respirar, ordenar, hablar con alguien..." onchange="saveDailyAnxiety()" />
+          <p class="mini-note">Tu registro queda guardado en este dispositivo para que puedas observar tus avances con el tiempo.</p>
+        </div>
+
+        <button class="calm-btn" onclick="showSection('calma')">🫶 Necesito calmarme ahora</button>
         <div class="quote" id="quote">Hoy merezco calma, amor y una nueva oportunidad.</div>
         <button onclick="newQuote()">Dame otra frase</button>
       </div>
@@ -365,6 +424,16 @@
       <section class="card"><div class="affirmations"><div class="affirmation">Estoy haciendo lo mejor que puedo.</div><div class="affirmation">Mis procesos también merecen paciencia.</div><div class="affirmation">Soy más fuerte que mis obstáculos.</div><div class="affirmation">Cada día puedo volver a empezar.</div></div></section>
     </section>
 
+    <section id="calma" class="view">
+      <div class="section-title"><h2>🫶 Herramientas para volver al presente</h2><button class="back-btn" onclick="showSection('inicio')">Volver al inicio</button></div>
+      <section class="card calm-tools">
+        <div class="calm-tool"><strong>🌬️ Respiración lenta</strong><br>Inhala suavemente por la nariz y deja que la exhalación sea lenta y cómoda. Repite durante unos minutos sin forzar la respiración.</div>
+        <div class="calm-tool"><strong>🌿 5-4-3-2-1</strong><br>Mira a tu alrededor e identifica 5 cosas que ves, 4 que puedes tocar, 3 que escuchas, 2 que hueles y 1 que saboreas. La intención es volver tu atención al momento presente.</div>
+        <div class="calm-tool"><strong>🚶 Cambia de escenario</strong><br>Si puedes hacerlo con seguridad, levántate, toma agua, abre una ventana o camina lentamente por la habitación durante unos minutos.</div>
+        <div class="medical-note">Estas herramientas son de autocuidado y no sustituyen evaluación ni tratamiento profesional. Si los síntomas son intensos, persistentes o existe riesgo para tu seguridad, busca ayuda profesional o servicios de emergencia de tu zona.</div>
+      </section>
+    </section>
+
     <section id="entradas" class="view">
       <div class="section-title"><h2>📚 Mis entradas guardadas</h2><button class="back-btn" onclick="showSection('inicio')">Volver al inicio</button></div>
       <section class="card full"><input id="search" placeholder="Buscar por palabra o emoción..." oninput="renderEntries()" /><div id="entries"></div><button class="danger" onclick="deleteAll()">Borrar todo el diario</button></section>
@@ -387,6 +456,132 @@
     ];
 
     const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+    const weeklyRoutine = {
+      Lunes: { focus: 'Organizar y empezar suave', blocks: {
+        '🌅 Mañana': ['Abrir cortinas o ventana y recibir luz natural', 'Aseo personal y vestirse con ropa cómoda', 'Desayunar y tomar agua'],
+        '☀️ Mediodía': ['Ordenar un espacio pequeño durante 10 minutos', 'Almorzar sin prisa y hacer una pausa breve'],
+        '🌤️ Tarde': ['Mover el cuerpo o caminar en casa 10 minutos', 'Elegir una tarea sencilla y terminarla'],
+        '🌙 Noche': ['Preparar algo sencillo para mañana', 'Reducir pantallas antes de dormir y escribir algo bueno del día']
+      }},
+      Martes: { focus: 'Autocuidado', blocks: {
+        '🌅 Mañana': ['Tender la cama y abrir una ventana', 'Ducharse o realizar el aseo personal', 'Desayunar con calma'],
+        '☀️ Mediodía': ['Preparar o ayudar a preparar una comida', 'Hacer 5 minutos de respiración lenta'],
+        '🌤️ Tarde': ['Realizar una actividad agradable en casa', 'Estirar suavemente el cuerpo o caminar unos minutos'],
+        '🌙 Noche': ['Dejar listo un espacio para descansar', 'Anotar una cosa que cuidaste de ti hoy']
+      }},
+      Miércoles: { focus: 'Movimiento y pequeñas metas', blocks: {
+        '🌅 Mañana': ['Levantarse, hidratarse y recibir luz natural', 'Aseo personal', 'Elegir una meta pequeña para hoy'],
+        '☀️ Mediodía': ['Completar una tarea doméstica breve', 'Almorzar y descansar unos minutos'],
+        '🌤️ Tarde': ['Caminar o moverse 10 a 15 minutos según tolerancia', 'Hacer algo con las manos: cocinar, ordenar, dibujar o cuidar una planta'],
+        '🌙 Noche': ['Reconocer qué tarea sí pudiste realizar', 'Hacer una rutina tranquila antes de dormir']
+      }},
+      Jueves: { focus: 'Conectar con otros', blocks: {
+        '🌅 Mañana': ['Abrir cortinas y comenzar el día fuera de la cama', 'Aseo personal y desayuno', 'Pensar en una persona segura con quien conectar'],
+        '☀️ Mediodía': ['Enviar un mensaje o hablar unos minutos con alguien de confianza', 'Comer y tomar agua'],
+        '🌤️ Tarde': ['Compartir una actividad sencilla con alguien o permanecer en un espacio común', 'Hacer una pausa de respiración lenta'],
+        '🌙 Noche': ['Anotar algo que agradeces de una persona', 'Prepararte para descansar sin exigirte resolver pendientes']
+      }},
+      Viernes: { focus: 'Disfrutar sin exigencia', blocks: {
+        '🌅 Mañana': ['Ventilar la habitación y arreglarte', 'Desayunar', 'Elegir una actividad agradable para hoy'],
+        '☀️ Mediodía': ['Escuchar música, cocinar o realizar un pasatiempo', 'Almorzar con atención al momento'],
+        '🌤️ Tarde': ['Moverte unos minutos y cambiar de ambiente dentro de casa', 'Dedicar 20 minutos a algo que disfrutas'],
+        '🌙 Noche': ['Recordar un momento agradable de la semana', 'Bajar el ritmo y preparar el descanso']
+      }},
+      Sábado: { focus: 'Un pequeño paso valiente', blocks: {
+        '🌅 Mañana': ['Mantener una hora razonable para levantarte', 'Aseo personal y desayuno', 'Elegir un reto pequeño y alcanzable'],
+        '☀️ Mediodía': ['Realizar el reto elegido sin buscar perfección', 'Comer y darte tiempo para recuperarte'],
+        '🌤️ Tarde': ['Hacer una actividad diferente a la rutina habitual', 'Reconocer el esfuerzo aunque haya habido ansiedad'],
+        '🌙 Noche': ['Anotar qué aprendiste del intento', 'Hacer algo calmado antes de dormir']
+      }},
+      Domingo: { focus: 'Descansar y preparar', blocks: {
+        '🌅 Mañana': ['Empezar el día con calma y recibir luz natural', 'Aseo personal y desayuno', 'Evitar llenar el día de obligaciones'],
+        '☀️ Mediodía': ['Compartir una comida o hacer una actividad tranquila', 'Descansar de forma consciente'],
+        '🌤️ Tarde': ['Ordenar solo lo necesario para comenzar la semana', 'Elegir 1 o 2 prioridades sencillas para mañana'],
+        '🌙 Noche': ['Reconocer tres pequeños avances de la semana', 'Preparar el descanso y cerrar la semana con amabilidad']
+      }}
+    };
+
+    function localDateKey(date = new Date()) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function todayName() {
+      return ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][new Date().getDay()];
+    }
+
+    function getDailyState() {
+      const all = JSON.parse(localStorage.getItem('diario_rutina_diaria') || '{}');
+      const key = localDateKey();
+      return { all, key, state: all[key] || { completed: {}, anxietyStart: 5, anxietyEnd: 5, helped: '' } };
+    }
+
+    function saveDailyState(state) {
+      const data = getDailyState();
+      data.all[data.key] = state;
+      localStorage.setItem('diario_rutina_diaria', JSON.stringify(data.all));
+    }
+
+    function renderToday() {
+      const day = todayName();
+      const plan = weeklyRoutine[day];
+      const data = getDailyState();
+      const state = data.state;
+      const dateLabel = new Intl.DateTimeFormat('es-BO', { weekday:'long', day:'numeric', month:'long', year:'numeric' }).format(new Date());
+      document.getElementById('todayDate').textContent = dateLabel;
+      document.getElementById('todayGreeting').textContent = 'Tu plan para ' + day.toLowerCase();
+      document.getElementById('todayFocus').textContent = 'Enfoque: ' + plan.focus;
+      document.getElementById('anxietyStart').value = state.anxietyStart ?? 5;
+      document.getElementById('anxietyEnd').value = state.anxietyEnd ?? 5;
+      document.getElementById('anxietyStartValue').textContent = state.anxietyStart ?? 5;
+      document.getElementById('anxietyEndValue').textContent = state.anxietyEnd ?? 5;
+      document.getElementById('helpedToday').value = state.helped || '';
+
+      let taskIndex = 0;
+      const html = Object.entries(plan.blocks).map(([block, tasks]) => {
+        const taskHtml = tasks.map(task => {
+          const id = 'routine-' + taskIndex++;
+          return `<label class="routine-task"><input type="checkbox" ${state.completed[id] ? 'checked' : ''} onchange="toggleRoutineTask('${id}', this.checked)" /><span class="${state.completed[id] ? 'done' : ''}">${escapeHtml(task)}</span></label>`;
+        }).join('');
+        return `<div class="routine-block"><h3>${block}</h3>${taskHtml}</div>`;
+      }).join('');
+      document.getElementById('todayRoutine').innerHTML = html;
+      updateTodayProgress();
+    }
+
+    function toggleRoutineTask(id, checked) {
+      const data = getDailyState();
+      data.state.completed[id] = checked;
+      saveDailyState(data.state);
+      renderToday();
+    }
+
+    function updateTodayProgress() {
+      const plan = weeklyRoutine[todayName()];
+      const tasks = Object.values(plan.blocks).flat();
+      const state = getDailyState().state;
+      const done = tasks.filter((_, i) => state.completed['routine-' + i]).length;
+      const percent = tasks.length ? Math.round(done / tasks.length * 100) : 0;
+      document.getElementById('todayProgressText').textContent = `${done}/${tasks.length} · ${percent}%`;
+      document.getElementById('todayProgressBar').style.width = percent + '%';
+      const nextIndex = tasks.findIndex((_, i) => !state.completed['routine-' + i]);
+      document.getElementById('nextStepText').textContent = nextIndex >= 0 ? tasks[nextIndex] : 'Terminaste tu rutina de hoy. Reconoce el esfuerzo y descansa.';
+    }
+
+    function updateAnxietyValue(inputId, valueId) {
+      document.getElementById(valueId).textContent = document.getElementById(inputId).value;
+    }
+
+    function saveDailyAnxiety() {
+      const data = getDailyState();
+      data.state.anxietyStart = Number(document.getElementById('anxietyStart').value);
+      data.state.anxietyEnd = Number(document.getElementById('anxietyEnd').value);
+      data.state.helped = document.getElementById('helpedToday').value.trim();
+      saveDailyState(data.state);
+    }
     const dateInput = document.getElementById('date');
     dateInput.valueAsDate = new Date();
 
@@ -631,6 +826,7 @@
 
     renderEntries();
     renderActivities();
+    renderToday();
   
   </script>
 

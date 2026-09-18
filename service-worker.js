@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mi-diario-de-luz-v4';
+const CACHE_NAME = 'mi-diario-de-luz-v5';
 const APP_SHELL = ['./', './index.html', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', event => {

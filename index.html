@@ -281,6 +281,44 @@
     .calm-tool { background:#fffafd; border-left:5px solid var(--verde); border-radius:16px; padding:14px; line-height:1.55; }
     .mini-note { font-size:13px; color:#6b5782; line-height:1.45; }
     @media (max-width:520px) { .today-head { display:block; } .today-focus { display:inline-block; margin-top:8px; } }
+
+    .menu-toggle {
+      position: fixed; top: 18px; left: 18px; z-index: 1200;
+      width: 48px; height: 48px; padding: 0; margin: 0;
+      border-radius: 16px; font-size: 22px;
+      display: grid; place-items: center;
+    }
+    .side-menu {
+      position: fixed; inset: 0 auto 0 0; z-index: 1300;
+      width: min(310px, 86vw); padding: 22px 16px;
+      background: rgba(255,250,253,.98);
+      box-shadow: 12px 0 35px rgba(71,54,95,.22);
+      transform: translateX(-105%); transition: transform .25s ease;
+      overflow-y: auto;
+    }
+    .side-menu.open { transform: translateX(0); }
+    .side-menu-head { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:4px 6px 14px; }
+    .side-menu-head strong { color:var(--lila-oscuro); font-size:19px; }
+    .side-menu-head button { margin:0; width:40px; height:40px; padding:0; border-radius:14px; }
+    .side-nav { display:grid; gap:8px; }
+    .side-nav button {
+      width:100%; margin:0; text-align:left; box-shadow:none;
+      background:transparent; color:var(--texto); border:1px solid #ead7ff;
+    }
+    .side-nav button:hover, .side-nav button.active { background:linear-gradient(135deg,#f3e7ff,#ffe3f1); color:var(--lila-oscuro); }
+    .side-nav .calm-nav { background:var(--verde-suave); border-color:#c7efd9; }
+    .menu-overlay {
+      position:fixed; inset:0; z-index:1250; background:rgba(71,54,95,.28);
+      opacity:0; pointer-events:none; transition:opacity .25s ease;
+    }
+    .menu-overlay.open { opacity:1; pointer-events:auto; }
+    header { position:relative; }
+    header .menu-actions { display:none; }
+    @media (max-width:520px) {
+      .menu-toggle { top:12px; left:12px; width:44px; height:44px; }
+      header { padding:24px 16px 20px; }
+      header h1 { padding:0 38px; }
+    }
 </style>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#c9a7ff">
@@ -292,20 +330,25 @@
 
 </head>
 <body>
+  <button class="menu-toggle" aria-label="Abrir menú" aria-controls="sideMenu" aria-expanded="false" onclick="toggleMenu()">☰</button>
+  <aside class="side-menu" id="sideMenu" aria-label="Menú principal">
+    <div class="side-menu-head"><strong>💜 Mi Diario de Luz</strong><button aria-label="Cerrar menú" onclick="closeMenu()">✕</button></div>
+    <nav class="side-nav">
+      <button data-section="inicio" onclick="navigateFromMenu('inicio')">☀️ Mi día de hoy</button>
+      <button data-section="diario" onclick="navigateFromMenu('diario')">📖 Mi diario</button>
+      <button data-section="actividades" onclick="navigateFromMenu('actividades')">🌱 Mis actividades</button>
+      <button data-section="evaluacion" onclick="navigateFromMenu('evaluacion')">✨ Evaluación</button>
+      <button data-section="notas" onclick="navigateFromMenu('notas')">📝 Notas rápidas</button>
+      <button data-section="apoyo" onclick="navigateFromMenu('apoyo')">💜 Mensajes de apoyo</button>
+      <button data-section="entradas" onclick="navigateFromMenu('entradas')">📚 Entradas guardadas</button>
+      <button class="calm-nav" data-section="calma" onclick="navigateFromMenu('calma')">🫶 Necesito calmarme</button>
+    </nav>
+  </aside>
+  <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
   <div class="app">
     <header>
       <h1>💜 Mi Diario de Luz 🌸</h1>
       <p>Un espacio seguro para escribir, avanzar poquito a poquito y reconocer cada logro.</p>
-      <div class="menu-actions">
-        <button class="success" onclick="showSection('inicio')">☀️ Mi día de hoy</button>
-        <button onclick="showSection('diario')">📖 Mi diario</button>
-        <button class="success" onclick="showSection('actividades')">🌱 Mis actividades</button>
-        <button class="secondary" onclick="showSection('evaluacion')">✨ Evaluación</button>
-        <button onclick="showSection('notas')">📝 Notas rápidas</button>
-        <button class="secondary" onclick="showSection('apoyo')">💜 Mensajes de apoyo</button>
-        <button onclick="showSection('entradas')">📚 Entradas guardadas</button>
-        <button class="success" onclick="showSection('calma')">🫶 Necesito calmarme</button>
-      </div>
     </header>
 
     <section id="inicio" class="view active">
@@ -557,6 +600,7 @@
       data.state.completed[id] = checked;
       saveDailyState(data.state);
       renderToday();
+    document.querySelector('.side-nav [data-section="inicio"]').classList.add('active');
     }
 
     function updateTodayProgress() {
@@ -592,9 +636,35 @@
       document.querySelectorAll('.view').forEach(section => section.classList.remove('active'));
       const selected = document.getElementById(sectionId);
       if (selected) selected.classList.add('active');
+      document.querySelectorAll('.side-nav [data-section]').forEach(btn => btn.classList.toggle('active', btn.dataset.section === sectionId));
       window.scrollTo({ top: 0, behavior: 'smooth' });
       if (sectionId === 'evaluacion') evaluateActivities(false);
     }
+
+    function toggleMenu() {
+      const menu = document.getElementById('sideMenu');
+      const overlay = document.getElementById('menuOverlay');
+      const toggle = document.querySelector('.menu-toggle');
+      const open = !menu.classList.contains('open');
+      menu.classList.toggle('open', open);
+      overlay.classList.toggle('open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+    }
+
+    function closeMenu() {
+      document.getElementById('sideMenu').classList.remove('open');
+      document.getElementById('menuOverlay').classList.remove('open');
+      document.querySelector('.menu-toggle').setAttribute('aria-expanded', 'false');
+    }
+
+    function navigateFromMenu(sectionId) {
+      showSection(sectionId);
+      closeMenu();
+    }
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') closeMenu();
+    });
 
     function goToActivities() {
       showSection('actividades');

@@ -1,0 +1,19 @@
+{
+  "name": "Mi Diario de Luz",
+  "short_name": "Diario de Luz",
+  "description": "Un espacio personal para escribir, organizar actividades y reconocer avances.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fffafc",
+  "theme_color": "#c9a7ff",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

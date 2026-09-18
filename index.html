@@ -280,6 +280,12 @@
     .calm-tools { display:grid; gap:12px; }
     .calm-tool { background:#fffafd; border-left:5px solid var(--verde); border-radius:16px; padding:14px; line-height:1.55; }
     .mini-note { font-size:13px; color:#6b5782; line-height:1.45; }
+    .symptom-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(155px,1fr)); gap:10px; margin:12px 0; }
+    .symptom-option { display:flex; gap:9px; align-items:center; background:#fffafd; border:1px solid #ead7ff; border-radius:15px; padding:11px; margin:0; font-weight:normal; }
+    .symptom-option input { width:auto; margin:0; }
+    .health-history { display:grid; gap:10px; margin-top:12px; }
+    .health-record { background:#fff4fb; border-left:4px solid var(--verde); border-radius:14px; padding:12px; }
+    .health-record small { color:#7b6796; }
     @media (max-width:520px) { .today-head { display:block; } .today-focus { display:inline-block; margin-top:8px; } }
 
     .menu-toggle {
@@ -493,6 +499,33 @@
 
         <div class="medical-note"><strong>⚠️ Cuándo no conviene atribuirlo solo a un cambio de presión:</strong><br><br>Busca valoración médica si aparece dolor intenso, pérdida de audición marcada o repentina, vértigo importante, sangrado o secreción por el oído, o si las molestias no mejoran o persisten. Los cambios importantes de presión pueden, en algunos casos, producir barotrauma y lesión del tímpano u oído interno.</div>
 
+        <div class="evaluation">
+          <h3>📝 ¿Qué siento hoy?</h3>
+          <p>Marca únicamente las sensaciones que notes hoy. Este registro sirve para observar cambios con el tiempo; no intenta establecer un diagnóstico.</p>
+          <div class="symptom-grid">
+            <label class="symptom-option"><input type="checkbox" name="earSymptom" value="Oído tapado o lleno"> 👂 Oído tapado</label>
+            <label class="symptom-option"><input type="checkbox" name="earSymptom" value="Zumbido o tinnitus"> 🔔 Zumbido</label>
+            <label class="symptom-option"><input type="checkbox" name="earSymptom" value="Presión en el oído"> ↔️ Presión</label>
+            <label class="symptom-option"><input type="checkbox" name="earSymptom" value="Chasquidos o pops"> ✨ Chasquidos</label>
+            <label class="symptom-option"><input type="checkbox" name="earSymptom" value="Audición amortiguada"> 🔉 Audición amortiguada</label>
+            <label class="symptom-option"><input type="checkbox" name="earSymptom" value="Mareo o desequilibrio"> 🌀 Mareo/desequilibrio</label>
+            <label class="symptom-option"><input type="checkbox" name="earSymptom" value="Molestia o dolor"> 😣 Molestia/dolor</label>
+            <label class="symptom-option"><input type="checkbox" name="earSymptom" value="Ninguna molestia"> 🌿 Ninguna molestia</label>
+          </div>
+          <label>Intensidad que percibo</label>
+          <select id="earIntensity"><option value="Leve">Leve</option><option value="Moderada">Moderada</option><option value="Intensa">Intensa</option></select>
+          <label>¿En qué oído?</label>
+          <select id="earSide"><option value="No especificado">No especificado</option><option value="Derecho">Derecho</option><option value="Izquierdo">Izquierdo</option><option value="Ambos">Ambos</option></select>
+          <label>¿Cuándo lo noto o qué estaba haciendo?</label>
+          <input id="earContext" placeholder="Ej: al tragar, bostezar, caminar, después de subir una pendiente..." />
+          <label>Observaciones</label>
+          <textarea id="earNotes" placeholder="Describe brevemente cómo se siente o cuánto duró..."></textarea>
+          <button class="success" onclick="saveEarHealthRecord()">Guardar cómo me siento hoy</button>
+        </div>
+        <div class="card">
+          <div class="section-title"><h3>📅 Mis registros recientes</h3><button class="danger small" onclick="deleteEarHealthHistory()">Borrar historial</button></div>
+          <div id="earHealthHistory" class="health-history"></div>
+        </div>
         <p class="mini-note">Esta sección es informativa y de orientación. No diagnostica la causa de los síntomas ni sustituye una evaluación médica.</p>
       </section>
     </section>
@@ -630,6 +663,7 @@
       data.state.completed[id] = checked;
       saveDailyState(data.state);
       renderToday();
+    renderEarHealthHistory();
     document.querySelector('.side-nav [data-section="inicio"]').classList.add('active');
     }
 
@@ -703,6 +737,64 @@
     function newQuote() {
       const random = Math.floor(Math.random() * quotes.length);
       document.getElementById('quote').textContent = quotes[random];
+    }
+
+    function getEarHealthRecords() { return JSON.parse(localStorage.getItem('diario_salud_auditiva') || '[]'); }
+    function setEarHealthRecords(records) { localStorage.setItem('diario_salud_auditiva', JSON.stringify(records)); }
+
+    function saveEarHealthRecord() {
+      const selected = Array.from(document.querySelectorAll('input[name="earSymptom"]:checked')).map(el => el.value);
+      if (!selected.length) {
+        alert('Marca al menos una opción para guardar tu registro.');
+        return;
+      }
+      const records = getEarHealthRecords();
+      records.unshift({
+        id: Date.now(),
+        date: localDateKey(),
+        symptoms: selected,
+        intensity: document.getElementById('earIntensity').value,
+        side: document.getElementById('earSide').value,
+        context: document.getElementById('earContext').value.trim(),
+        notes: document.getElementById('earNotes').value.trim()
+      });
+      setEarHealthRecords(records.slice(0, 90));
+      document.querySelectorAll('input[name="earSymptom"]').forEach(el => el.checked = false);
+      document.getElementById('earContext').value = '';
+      document.getElementById('earNotes').value = '';
+      renderEarHealthHistory();
+      alert('Registro guardado.');
+    }
+
+    function deleteEarHealthRecord(id) {
+      setEarHealthRecords(getEarHealthRecords().filter(r => r.id !== id));
+      renderEarHealthHistory();
+    }
+
+    function deleteEarHealthHistory() {
+      if (confirm('¿Seguro que quieres borrar todo el historial de salud auditiva?')) {
+        localStorage.removeItem('diario_salud_auditiva');
+        renderEarHealthHistory();
+      }
+    }
+
+    function renderEarHealthHistory() {
+      const container = document.getElementById('earHealthHistory');
+      if (!container) return;
+      const records = getEarHealthRecords();
+      if (!records.length) {
+        container.innerHTML = '<p class="mini-note">Todavía no hay registros. Cuando notes alguna sensación, puedes anotarla aquí.</p>';
+        return;
+      }
+      container.innerHTML = records.slice(0, 10).map(r => `
+        <div class="health-record">
+          <small>${escapeHtml(r.date)} · ${escapeHtml(r.intensity)} · ${escapeHtml(r.side)}</small>
+          <p><strong>Sensaciones:</strong> ${r.symptoms.map(escapeHtml).join(', ')}</p>
+          ${r.context ? `<p><strong>Momento/actividad:</strong> ${escapeHtml(r.context)}</p>` : ''}
+          ${r.notes ? `<p><strong>Observaciones:</strong> ${escapeHtml(r.notes)}</p>` : ''}
+          <button class="danger small" onclick="deleteEarHealthRecord(${r.id})">Eliminar</button>
+        </div>
+      `).join('');
     }
 
     function getEntries() { return JSON.parse(localStorage.getItem('diario_entradas') || '[]'); }

@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi Diario de Luz</title>
+  <style>
+    :root {
+      --lila: #c9a7ff;
+      --lila-oscuro: #8a5fd3;
+      --rosa: #ffb6d9;
+      --rosa-suave: #ffe3f1;
+      --blanco: #fffafc;
+      --texto: #47365f;
+      --sombra: rgba(120, 80, 150, 0.18);
+      --verde: #8bd6b3;
+      --verde-suave: #e6fff1;
+      --amarillo: #fff0b8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #f7e9ff, #ffe3f1, #ffffff);
+      color: var(--texto);
+      min-height: 100vh;
+      padding: 18px;
+    }
+
+    .app { max-width: 980px; margin: auto; }
+
+    header {
+      background: linear-gradient(135deg, var(--lila), var(--rosa));
+      color: white;
+      padding: 28px 22px;
+      border-radius: 28px;
+      box-shadow: 0 10px 25px var(--sombra);
+      text-align: center;
+    }
+
+    header h1 { margin: 0; font-size: 32px; }
+    header p { margin: 8px 0 0; font-size: 16px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.82);
+      border: 1px solid rgba(255,255,255,0.8);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 8px 22px var(--sombra);
+      backdrop-filter: blur(8px);
+    }
+
+    h2 { margin-top: 0; color: var(--lila-oscuro); font-size: 21px; }
+    h3 { color: var(--lila-oscuro); margin-bottom: 8px; }
+
+    label { font-weight: bold; display: block; margin: 12px 0 6px; }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid #ead7ff;
+      border-radius: 16px;
+      padding: 12px;
+      font-size: 15px;
+      color: var(--texto);
+      background: #fffafd;
+      outline: none;
+    }
+
+    textarea { min-height: 130px; resize: vertical; }
+
+    button {
+      border: none;
+      border-radius: 16px;
+      padding: 12px 16px;
+      margin-top: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      color: white;
+      background: linear-gradient(135deg, var(--lila-oscuro), #df73b8);
+      box-shadow: 0 6px 16px var(--sombra);
+    }
+
+    button.secondary { background: linear-gradient(135deg, #b78df3, #ff9ed0); }
+    button.danger { background: linear-gradient(135deg, #d55b8f, #a65ed6); }
+    button.success { background: linear-gradient(135deg, #67b98f, #8a5fd3); }
+    button.small { padding: 8px 10px; border-radius: 12px; font-size: 13px; margin-top: 6px; }
+
+    .quote {
+      font-size: 18px;
+      line-height: 1.5;
+      background: var(--rosa-suave);
+      padding: 18px;
+      border-radius: 20px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .entry {
+      background: #fff4fb;
+      border-left: 5px solid var(--lila);
+      padding: 14px;
+      border-radius: 16px;
+      margin-top: 12px;
+    }
+
+    .entry small { color: #7b6796; display: block; margin-bottom: 6px; }
+    .full { grid-column: 1 / -1; }
+
+    .affirmations {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+    }
+
+    .affirmation {
+      background: linear-gradient(135deg, #fff4fb, #f3e7ff);
+      padding: 14px;
+      border-radius: 18px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .top-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+    .activity-intro {
+      background: linear-gradient(135deg, var(--verde-suave), #fff4fb);
+      border-left: 6px solid var(--verde);
+      padding: 14px;
+      border-radius: 18px;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .day-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .day-card {
+      background: #fffafd;
+      border: 1px solid #ead7ff;
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .activity-item {
+      background: #fff4fb;
+      border-radius: 14px;
+      padding: 10px;
+      margin: 8px 0;
+      border-left: 4px solid var(--lila);
+    }
+
+    .activity-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .activity-row input[type="checkbox"] { width: auto; margin-top: 3px; transform: scale(1.2); }
+    .done { text-decoration: line-through; opacity: 0.7; }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: var(--amarillo);
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    .evaluation {
+      background: linear-gradient(135deg, #f3e7ff, #e6fff1);
+      border-radius: 20px;
+      padding: 18px;
+      margin-top: 14px;
+      border: 1px solid #ead7ff;
+      line-height: 1.55;
+    }
+
+    .progress-wrap {
+      background: #f3e7ff;
+      border-radius: 999px;
+      overflow: hidden;
+      height: 18px;
+      margin: 10px 0;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(135deg, var(--lila-oscuro), var(--verde));
+      transition: width .3s;
+    }
+
+    .medical-note {
+      font-size: 13px;
+      background: #fff7fb;
+      border-radius: 16px;
+      padding: 12px;
+      margin-top: 12px;
+      color: #6b5782;
+    }
+
+    @media (max-width: 520px) {
+      body { padding: 12px; }
+      header h1 { font-size: 26px; }
+      .card { padding: 16px; }
+    }
+  
+
+    .menu-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .menu-actions button {
+      width: 100%;
+      min-height: 54px;
+      margin-top: 0;
+      font-size: 15px;
+    }
+
+    .view { display: none; margin-top: 18px; }
+    .view.active { display: block; }
+
+    .welcome {
+      background: rgba(255,255,255,0.86);
+      border-radius: 26px;
+      padding: 22px;
+      box-shadow: 0 8px 22px var(--sombra);
+      text-align: center;
+    }
+
+    .welcome p { line-height: 1.6; }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .back-btn {
+      background: linear-gradient(135deg, #b78df3, #ff9ed0);
+      padding: 10px 14px;
+      font-size: 14px;
+    }
+</style>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#c9a7ff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Diario de Luz">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>💜 Mi Diario de Luz 🌸</h1>
+      <p>Un espacio seguro para escribir, avanzar poquito a poquito y reconocer cada logro.</p>
+      <div class="menu-actions">
+        <button onclick="showSection('diario')">📖 Mi diario</button>
+        <button class="success" onclick="showSection('actividades')">🌱 Mis actividades</button>
+        <button class="secondary" onclick="showSection('evaluacion')">✨ Evaluación</button>
+        <button onclick="showSection('notas')">📝 Notas rápidas</button>
+        <button class="secondary" onclick="showSection('apoyo')">💜 Mensajes de apoyo</button>
+        <button onclick="showSection('entradas')">📚 Entradas guardadas</button>
+      </div>
+    </header>
+
+    <section id="inicio" class="view active">
+      <div class="welcome">
+        <h2>Bienvenida a tu espacio de calma</h2>
+        <p>Para mantener todo ordenado, elige qué quieres hacer ahora. Puedes escribir tu día, planificar actividades, marcar avances o ver una evaluación motivadora.</p>
+        <div class="quote" id="quote">Hoy merezco calma, amor y una nueva oportunidad.</div>
+        <button onclick="newQuote()">Dame otra frase</button>
+      </div>
+    </section>
+
+    <section id="diario" class="view">
+      <div class="section-title"><h2>📖 Mi diario</h2><button class="back-btn" onclick="showSection('inicio')">Volver al inicio</button></div>
+      <div class="grid">
+        <section class="card">
+          <h2>¿Cómo me siento hoy?</h2>
+          <label>Emoción principal</label>
+          <select id="emotion">
+            <option>😊 Agradecida</option><option>💪 Motivada</option><option>😔 Triste</option><option>😟 Preocupada</option><option>😴 Cansada</option><option>🌷 En paz</option><option>🔥 Con ganas de avanzar</option>
+          </select>
+          <label>Algo bueno de hoy</label>
+          <input id="goodThing" placeholder="Ej: Hoy hice algo por mí..." />
+        </section>
+        <section class="card full">
+          <h2>Mi día</h2>
+          <label>Fecha</label><input type="date" id="date" />
+          <label>Lo que viví hoy</label><textarea id="dailyText" placeholder="Escribe aquí lo que pasó, cómo te sentiste y qué quieres soltar..."></textarea>
+          <label>Lo que aprendí</label><textarea id="lesson" placeholder="Hoy aprendí que..."></textarea>
+          <div class="top-actions"><button onclick="saveEntry()">Guardar mi día</button><button class="secondary" onclick="clearForm()">Limpiar</button></div>
+        </section>
+      </div>
+    </section>
+
+    <section id="actividades" class="view">
+      <div class="section-title"><h2>🌱 Mis actividades y avances</h2><button class="back-btn" onclick="showSection('inicio')">Volver al inicio</button></div>
+      <section class="card full" id="activitiesSection">
+        <div class="activity-intro">Planifica pequeñas actividades de la semana y marca las que ya realizaste. Cada paso cuenta: levantarse, ordenar algo pequeño, bañarse, abrir una ventana, llamar a alguien, caminar dentro de casa o intentar salir unos minutos.</div>
+        <div class="grid">
+          <div class="card">
+            <h3>Planificar actividad</h3>
+            <label>Día</label>
+            <select id="activityDay"><option value="Lunes">Lunes</option><option value="Martes">Martes</option><option value="Miércoles">Miércoles</option><option value="Jueves">Jueves</option><option value="Viernes">Viernes</option><option value="Sábado">Sábado</option><option value="Domingo">Domingo</option></select>
+            <label>Actividad que quiero realizar</label>
+            <textarea id="activityText" placeholder="Ej: Tender mi cama, bañarme, preparar desayuno, sentarme cerca de la puerta, salir 2 minutos al patio..."></textarea>
+            <label>Nivel de esfuerzo para mí</label>
+            <select id="activityLevel"><option value="1">Suave: me cuesta poco</option><option value="2">Medio: necesito animarme</option><option value="3">Valiente: me cuesta bastante, pero quiero intentarlo</option></select>
+            <button onclick="addActivity()">Agregar actividad</button>
+          </div>
+          <div class="card">
+            <h3>Resumen de avance</h3>
+            <p>Aquí verás tus actividades separadas por día. Marca con ✔ lo que ya realizaste.</p>
+            <button class="success" onclick="showSection('evaluacion')">Ver evaluación</button>
+          </div>
+        </div>
+        <h3>Mi semana</h3>
+        <div class="day-grid" id="weekContainer"></div>
+        <button class="danger" onclick="deleteAllActivities()">Borrar actividades de la semana</button>
+      </section>
+    </section>
+
+    <section id="evaluacion" class="view">
+      <div class="section-title"><h2>✨ Evaluación de mis avances</h2><button class="back-btn" onclick="showSection('inicio')">Volver al inicio</button></div>
+      <section class="card full">
+        <label>Evaluar por día</label>
+        <select id="evalDay" onchange="evaluateActivities(false)"><option value="Semana">Toda la semana</option><option value="Lunes">Lunes</option><option value="Martes">Martes</option><option value="Miércoles">Miércoles</option><option value="Jueves">Jueves</option><option value="Viernes">Viernes</option><option value="Sábado">Sábado</option><option value="Domingo">Domingo</option></select>
+        <button class="success" onclick="evaluateActivities()">Ver mi evaluación</button>
+        <div class="evaluation" id="evaluationBox">Agrega tus actividades, marca las realizadas y luego presiona “Ver mi evaluación”.</div>
+        <div class="medical-note">Nota: esta evaluación es de apoyo emocional y motivación. No reemplaza la atención de un profesional de salud mental.</div>
+      </section>
+    </section>
+
+    <section id="notas" class="view">
+      <div class="section-title"><h2>📝 Notas rápidas</h2><button class="back-btn" onclick="showSection('inicio')">Volver al inicio</button></div>
+      <section class="card"><textarea id="quickNotes" placeholder="Ideas, pendientes, recordatorios o pensamientos..."></textarea><button onclick="saveNotes()">Guardar notas</button></section>
+    </section>
+
+    <section id="apoyo" class="view">
+      <div class="section-title"><h2>💜 Mensajes de apoyo</h2><button class="back-btn" onclick="showSection('inicio')">Volver al inicio</button></div>
+      <section class="card"><div class="affirmations"><div class="affirmation">Estoy haciendo lo mejor que puedo.</div><div class="affirmation">Mis procesos también merecen paciencia.</div><div class="affirmation">Soy más fuerte que mis obstáculos.</div><div class="affirmation">Cada día puedo volver a empezar.</div></div></section>
+    </section>
+
+    <section id="entradas" class="view">
+      <div class="section-title"><h2>📚 Mis entradas guardadas</h2><button class="back-btn" onclick="showSection('inicio')">Volver al inicio</button></div>
+      <section class="card full"><input id="search" placeholder="Buscar por palabra o emoción..." oninput="renderEntries()" /><div id="entries"></div><button class="danger" onclick="deleteAll()">Borrar todo el diario</button></section>
+    </section>
+  </div>
+
+  <script>
+
+    const quotes = [
+      'Hoy merezco calma, amor y una nueva oportunidad.',
+      'No tengo que resolver toda mi vida hoy, solo dar un paso.',
+      'Mi valor no depende de un mal día.',
+      'Estoy creciendo, incluso cuando siento que avanzo lento.',
+      'Puedo con esto. Ya he superado días difíciles antes.',
+      'Cada pequeño logro también cuenta.',
+      'Hoy elijo hablarme con amor y paciencia.',
+      'Mi paz también es una prioridad.',
+      'No estoy sola; estoy aprendiendo a acompañarme.',
+      'Lo que siento es válido, pero no me define.'
+    ];
+
+    const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    const dateInput = document.getElementById('date');
+    dateInput.valueAsDate = new Date();
+
+    const savedNotes = localStorage.getItem('diario_notas');
+    if (savedNotes) document.getElementById('quickNotes').value = savedNotes;
+
+    function showSection(sectionId) {
+      document.querySelectorAll('.view').forEach(section => section.classList.remove('active'));
+      const selected = document.getElementById(sectionId);
+      if (selected) selected.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (sectionId === 'evaluacion') evaluateActivities(false);
+    }
+
+    function goToActivities() {
+      showSection('actividades');
+    }
+
+    function newQuote() {
+      const random = Math.floor(Math.random() * quotes.length);
+      document.getElementById('quote').textContent = quotes[random];
+    }
+
+    function getEntries() { return JSON.parse(localStorage.getItem('diario_entradas') || '[]'); }
+    function setEntries(entries) { localStorage.setItem('diario_entradas', JSON.stringify(entries)); }
+
+    function saveEntry() {
+      const entry = {
+        id: Date.now(),
+        date: document.getElementById('date').value,
+        emotion: document.getElementById('emotion').value,
+        goodThing: document.getElementById('goodThing').value.trim(),
+        dailyText: document.getElementById('dailyText').value.trim(),
+        lesson: document.getElementById('lesson').value.trim()
+      };
+      if (!entry.dailyText && !entry.lesson && !entry.goodThing) {
+        alert('Escribe algo antes de guardar 💜');
+        return;
+      }
+      const entries = getEntries();
+      entries.unshift(entry);
+      setEntries(entries);
+      renderEntries();
+      clearForm();
+      alert('Tu día fue guardado con cariño 🌸');
+    }
+
+    function clearForm() {
+      document.getElementById('goodThing').value = '';
+      document.getElementById('dailyText').value = '';
+      document.getElementById('lesson').value = '';
+      dateInput.valueAsDate = new Date();
+    }
+
+    function saveNotes() {
+      localStorage.setItem('diario_notas', document.getElementById('quickNotes').value);
+      alert('Notas guardadas 💜');
+    }
+
+    function deleteEntry(id) {
+      const entries = getEntries().filter(e => e.id !== id);
+      setEntries(entries);
+      renderEntries();
+    }
+
+    function deleteAll() {
+      if (confirm('¿Seguro que quieres borrar todo tu diario?')) {
+        localStorage.removeItem('diario_entradas');
+        renderEntries();
+      }
+    }
+
+    function renderEntries() {
+      const container = document.getElementById('entries');
+      const query = document.getElementById('search').value.toLowerCase();
+      const entries = getEntries().filter(e => JSON.stringify(e).toLowerCase().includes(query));
+      if (!entries.length) {
+        container.innerHTML = '<p>Aún no hay entradas guardadas o no se encontraron resultados.</p>';
+        return;
+      }
+      container.innerHTML = entries.map(e => `
+        <div class="entry">
+          <small>${e.date || 'Sin fecha'} · ${e.emotion}</small>
+          ${e.goodThing ? `<p><strong>Algo bueno:</strong> ${escapeHtml(e.goodThing)}</p>` : ''}
+          ${e.dailyText ? `<p><strong>Mi día:</strong> ${escapeHtml(e.dailyText)}</p>` : ''}
+          ${e.lesson ? `<p><strong>Aprendí:</strong> ${escapeHtml(e.lesson)}</p>` : ''}
+          <button class="danger" onclick="deleteEntry(${e.id})">Eliminar</button>
+        </div>
+      `).join('');
+    }
+
+    function getActivities() { return JSON.parse(localStorage.getItem('diario_actividades') || '[]'); }
+    function setActivities(activities) { localStorage.setItem('diario_actividades', JSON.stringify(activities)); }
+
+    function addActivity() {
+      const text = document.getElementById('activityText').value.trim();
+      if (!text) {
+        alert('Escribe una actividad para agregar 🌱');
+        return;
+      }
+      const activities = getActivities();
+      activities.push({
+        id: Date.now(),
+        day: document.getElementById('activityDay').value,
+        text,
+        level: Number(document.getElementById('activityLevel').value),
+        done: false
+      });
+      setActivities(activities);
+      document.getElementById('activityText').value = '';
+      renderActivities();
+      evaluateActivities(false);
+    }
+
+    function toggleActivity(id) {
+      const activities = getActivities().map(a => a.id === id ? { ...a, done: !a.done } : a);
+      setActivities(activities);
+      renderActivities();
+      evaluateActivities(false);
+    }
+
+    function deleteActivity(id) {
+      const activities = getActivities().filter(a => a.id !== id);
+      setActivities(activities);
+      renderActivities();
+      evaluateActivities(false);
+    }
+
+    function deleteAllActivities() {
+      if (confirm('¿Seguro que quieres borrar todas las actividades de la semana?')) {
+        localStorage.removeItem('diario_actividades');
+        renderActivities();
+        document.getElementById('evaluationBox').innerHTML = 'Agrega tus actividades, marca las realizadas y luego presiona “Ver mi evaluación”.';
+      }
+    }
+
+    function renderActivities() {
+      const container = document.getElementById('weekContainer');
+      const activities = getActivities();
+      container.innerHTML = days.map(day => {
+        const dayActivities = activities.filter(a => a.day === day);
+        const done = dayActivities.filter(a => a.done).length;
+        const total = dayActivities.length;
+        return `
+          <div class="day-card">
+            <h3>${day}</h3>
+            <p><strong>${done}/${total}</strong> actividades realizadas</p>
+            ${dayActivities.length ? dayActivities.map(a => `
+              <div class="activity-item">
+                <div class="activity-row">
+                  <input type="checkbox" ${a.done ? 'checked' : ''} onchange="toggleActivity(${a.id})" />
+                  <div>
+                    <div class="${a.done ? 'done' : ''}">${escapeHtml(a.text)}</div>
+                    <span class="badge">${levelText(a.level)}</span><br>
+                    <button class="danger small" onclick="deleteActivity(${a.id})">Eliminar</button>
+                  </div>
+                </div>
+              </div>
+            `).join('') : '<p>Aún no hay actividades para este día.</p>'}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function levelText(level) {
+      if (level === 3) return 'Paso valiente ⭐⭐⭐';
+      if (level === 2) return 'Paso medio ⭐⭐';
+      return 'Paso suave ⭐';
+    }
+
+    function evaluateActivities(showAlert = true) {
+      const selected = document.getElementById('evalDay').value;
+      let activities = getActivities();
+      if (selected !== 'Semana') activities = activities.filter(a => a.day === selected);
+
+      const box = document.getElementById('evaluationBox');
+      if (!activities.length) {
+        box.innerHTML = `Todavía no hay actividades registradas para ${selected === 'Semana' ? 'la semana' : selected}. Empieza con una actividad pequeña y amable contigo.`;
+        return;
+      }
+
+      const total = activities.length;
+      const doneActivities = activities.filter(a => a.done);
+      const done = doneActivities.length;
+      const percent = Math.round((done / total) * 100);
+      const braveDone = doneActivities.filter(a => a.level === 3).length;
+      const pending = activities.filter(a => !a.done).slice(0, 3);
+
+      let title = '';
+      let message = '';
+      let advice = '';
+
+      if (percent === 0) {
+        title = '🌱 Hoy todavía estamos empezando';
+        message = 'No significa que fallaste. Significa que necesitas comenzar con algo más pequeño. Incluso una acción de 2 minutos cuenta.';
+        advice = 'Consejo: elige una sola actividad fácil, por ejemplo tomar agua, abrir una ventana o sentarte 2 minutos en un lugar diferente.';
+      } else if (percent < 40) {
+        title = '🌷 Vas paso a paso';
+        message = 'Lograste iniciar, y eso ya tiene valor. Cuando hay ansiedad, empezar también es un avance importante.';
+        advice = 'Consejo: no aumentes muchas tareas todavía. Repite las que sí pudiste hacer para crear confianza.';
+      } else if (percent < 70) {
+        title = '💜 Estuviste bien';
+        message = 'Cumpliste varias actividades. Vas construyendo seguridad poco a poco, sin exigirte de más.';
+        advice = 'Consejo: mañana intenta una actividad suave y una actividad un poquito más valiente, siempre a tu ritmo.';
+      } else if (percent < 100) {
+        title = '✨ Muy bien, estás avanzando';
+        message = 'Realizaste la mayoría de tus actividades. Eso demuestra esfuerzo, constancia y ganas de mejorar.';
+        advice = 'Consejo: reconoce lo que hiciste antes de mirar lo que falta. Lo pendiente puede retomarse con calma.';
+      } else {
+        title = '🌟 Excelente, lo lograste';
+        message = 'Completaste todas las actividades registradas. Celebra este avance, aunque parezca pequeño. Para tu proceso, cuenta muchísimo.';
+        advice = 'Consejo: mantén el ritmo y agrega una actividad nueva solo si te sientes preparada.';
+      }
+
+      const pendingHtml = pending.length
+        ? `<p><strong>Te falta por intentar:</strong> ${pending.map(a => escapeHtml(a.text)).join(', ')}.</p>`
+        : '<p><strong>No tienes actividades pendientes en esta evaluación.</strong></p>';
+
+      const braveHtml = braveDone > 0
+        ? `<p>Además, realizaste <strong>${braveDone}</strong> actividad(es) valiente(s). Eso merece reconocimiento especial 💪.</p>`
+        : '<p>Cuando te sientas lista, puedes agregar una actividad “valiente”, pero sin presionarte.</p>';
+
+      box.innerHTML = `
+        <h3>${title}</h3>
+        <div class="progress-wrap"><div class="progress-bar" style="width:${percent}%"></div></div>
+        <p><strong>Resultado:</strong> ${done} de ${total} actividades realizadas (${percent}%).</p>
+        <p>${message}</p>
+        ${braveHtml}
+        ${pendingHtml}
+        <p><strong>Qué puedes hacer para mejorar:</strong> ${advice}</p>
+        <p><strong>Frase de apoyo:</strong> No tienes que hacerlo perfecto; solo necesitas seguir intentando con cariño.</p>
+      `;
+
+      if (showAlert) alert('Evaluación lista 🌱');
+    }
+
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>'"]/g, function(char) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char];
+      });
+    }
+
+    renderEntries();
+    renderActivities();
+  
+  </script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./service-worker.js').catch(function(error) {
+        console.log('Service Worker no registrado:', error);
+      });
+    });
+  }
+</script>
+
+</body>
+</html>
